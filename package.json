@@ -10,6 +10,7 @@
     "todo",
     "node.js"
   ],
+  "type": "module",
   "author": "Zazdravnykh V.V.",
   "license": "ISC",
   "dependencies": {

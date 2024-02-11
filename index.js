@@ -1,7 +1,9 @@
-// Requiring module 
-const fs = require('fs');
-
-const path = require('path');
+import fs from "fs";
+import path from "path";
+import chalk from "chalk";
+import boxen from "boxen";
+import { fileURLToPath } from 'url'
+const __filename = fileURLToPath(import.meta.url)
 
 // Accessing arguments 
 const args = process.argv;
@@ -11,6 +13,14 @@ const args = process.argv;
 const currentWorkingDirectory = args[1].slice(0, -8);
 
 const scriptFileName = path.basename(__filename);
+
+const boxenOptions = {
+    padding: 1,
+    margin: 1,
+    borderStyle: "round",
+    borderColor: "green",
+    backgroundColor: "#555555"
+};
 
 
 if (fs.existsSync(currentWorkingDirectory + 'todo.txt') === false) {
@@ -32,7 +42,11 @@ $ node ${scriptFileName} done NUMBER        # Пометить задачу ка
 $ node ${scriptFileName} help, -h, --help   # Отобразить данную аннатацию
 $ node ${scriptFileName} report             # Вывести статистику`;
 
-    console.log(UsageText);
+    const greeting = chalk.white.bold(UsageText);
+    const msgBox = boxen(greeting, boxenOptions);
+
+    console.log(msgBox);
+
 };
 
 const listFunction = () => {
