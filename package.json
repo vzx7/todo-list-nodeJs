@@ -1,0 +1,19 @@
+{
+  "name": "todo_synergy",
+  "version": "1.0.0",
+  "description": "Приложение для создания ToDo list ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "todo",
+    "node.js"
+  ],
+  "author": "Zazdravnykh V.V.",
+  "license": "ISC",
+  "dependencies": {
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0"
+  }
+}
