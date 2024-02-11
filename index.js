@@ -3,7 +3,8 @@ import path from "path";
 import chalk from "chalk";
 import boxen from "boxen";
 import { fileURLToPath } from 'url'
-const __filename = fileURLToPath(import.meta.url)
+const __filename = fileURLToPath(import.meta.url);
+const log = console.log;
 
 // Accessing arguments 
 const args = process.argv;
@@ -17,11 +18,10 @@ const scriptFileName = path.basename(__filename);
 const boxenOptions = {
     padding: 1,
     margin: 1,
-    borderStyle: "round",
+    borderStyle: "singleDouble",
     borderColor: "green",
     backgroundColor: "#555555"
 };
-
 
 if (fs.existsSync(currentWorkingDirectory + 'todo.txt') === false) {
     let createStream = fs.createWriteStream('todo.txt');
@@ -34,18 +34,17 @@ if (fs.existsSync(currentWorkingDirectory + 'done.txt') === false) {
 
 const InfoFunction = () => {
     const UsageText = ` 
-Использование :- 
-$ node ${scriptFileName} add "todo item"    # Добавить новую задачу
-$ node ${scriptFileName} ls                 # Показать список невыполненных задач
-$ node ${scriptFileName} del NUMBER         # Удалить задачу
-$ node ${scriptFileName} done NUMBER        # Пометить задачу как выполенную
-$ node ${scriptFileName} help, -h, --help   # Отобразить данную аннатацию
-$ node ${scriptFileName} report             # Вывести статистику`;
+$ node ${scriptFileName} add "Поставленная задача"      # Добавить новую задачу
+$ node ${scriptFileName} ls                             # Показать список невыполненных задач
+$ node ${scriptFileName} del NUMBER                     # Удалить задачу
+$ node ${scriptFileName} done NUMBER                    # Пометить задачу как выполенную
+$ node ${scriptFileName} help, -h, --help               # Отобразить данную аннатацию
+$ node ${scriptFileName} report                         # Вывести статистику`;
 
     const greeting = chalk.white.bold(UsageText);
-    const msgBox = boxen(greeting, boxenOptions);
+    const msgBox = boxen(greeting, { ...boxenOptions, title: 'Использование' });
 
-    console.log(msgBox);
+    log(msgBox);
 
 };
 
@@ -69,11 +68,11 @@ const listFunction = () => {
     });
 
     if (filterData.length === 0) {
-        console.log('There are no pending todos!');
+        log('There are no pending todos!');
     }
 
     for (let i = 0; i < filterData.length; i++) {
-        console.log((filterData.length - i) + '. '
+        log((filterData.length - i) + '. '
             + filterData[i]);
     }
 };
@@ -106,13 +105,13 @@ const addFunction = () => {
                 if (err) throw err;
 
                 // Logs the new task added 
-                console.log('Added todo: "' + newTask + '"');
+                log('Added todo: "' + newTask + '"');
             },
         );
     } else {
 
         // If argument was no passed 
-        console.log('Error: Missing todo string. Nothing added!');
+        log('Error: Missing todo string. Nothing added!');
     }
 };
 
@@ -144,7 +143,7 @@ const deleteFunction = () => {
         // If delete index is greater than no. of task 
         // or less than zero 
         if (deleteIndex > filterData.length || deleteIndex <= 0) {
-            console.log(
+            log(
                 'Error: todo #' + deleteIndex
                 + ' does not exist. Nothing deleted.',
             );
@@ -164,14 +163,14 @@ const deleteFunction = () => {
                     if (err) throw err;
 
                     // Logs the deleted index 
-                    console.log('Deleted todo #' + deleteIndex);
+                    log('Deleted todo #' + deleteIndex);
                 },
             );
         }
     } else {
 
         // Index argument was no passed 
-        console.log(
+        log(
             'Error: Missing NUMBER for deleting todo.');
     }
 };
@@ -215,7 +214,7 @@ const doneFunction = () => {
 
         // If done index is greater than no. of task or <=0 
         if (doneIndex > filterData.length || doneIndex <= 0) {
-            console.log('Error: todo #'
+            log('Error: todo #'
                 + doneIndex + ' does not exist.');
         } else {
 
@@ -244,7 +243,7 @@ const doneFunction = () => {
                 + '\n' + doneData,
                 function (err) {
                     if (err) throw err;
-                    console.log('Marked todo #'
+                    log('Marked todo #'
                         + doneIndex + ' as done.');
                 },
             );
@@ -252,7 +251,7 @@ const doneFunction = () => {
     } else {
 
         // If argument was not passed 
-        console.log('Error: Missing NUMBER for'
+        log('Error: Missing NUMBER for'
             + ' marking todo as done.');
     }
 };
@@ -292,7 +291,7 @@ const reportFunction = () => {
         return value !== '';
     });
 
-    console.log(
+    log(
         dateString +
         ' ' +
         'Pending : ' +
