@@ -31,10 +31,12 @@ const createVue = (greeting, exStyle) => {
     log(msgBox);
 }
 
+// Create files for data
 if (fs.existsSync(currentWorkingDirectory + 'todo.txt') === false) {
     let createStream = fs.createWriteStream('todo.txt');
     createStream.end();
 }
+
 if (fs.existsSync(currentWorkingDirectory + 'done.txt') === false) {
     let createStream = fs.createWriteStream('done.txt');
     createStream.end();
@@ -49,8 +51,7 @@ $ node ${scriptFileName} done NUMBER                    # Пометить за�
 $ node ${scriptFileName} help, -h, --help               # Отобразить данную аннатацию
 $ node ${scriptFileName} report                         # Вывести статистику`;
 
-    const greeting = styleInfo(UsageText);
-    createVue(greeting, { title: 'Использование' })
+    createVue(styleInfo(UsageText), { title: 'Использование' })
 };
 
 const listFunction = () => {
@@ -82,15 +83,28 @@ ${len - (len - i) + 1}. ${filterData[i]}`
     createVue(styleReport(report), { title: 'Отчет' });
 };
 
+const readFileTodo = () => fs
+    .readFileSync(currentWorkingDirectory + 'todo.txt')
+    .toString();
+
+const getToDoListArr = () => {
+    let data = [];
+    const fileData = readFileTodo();
+    data = fileData.split('\n');
+
+    let filterData = data.filter(function (value) {
+        return value !== '';
+    });
+
+    filterData.reverse();
+    return filterData;
+}
+
 const addFunction = () => {
     const newTask = args[3];
 
     if (newTask) {
-        let data = [];
-        const fileData = fs
-            .readFileSync(currentWorkingDirectory + 'todo.txt')
-            .toString();
-
+        const fileData = readFileTodo();
         fs.writeFile(
             currentWorkingDirectory + 'todo.txt',
             newTask + '\n' + fileData,
@@ -108,18 +122,7 @@ const addFunction = () => {
 const deleteFunction = () => {
     const deleteIndex = args[3];
     if (deleteIndex) {
-        let data = [];
-        const fileData = fs
-            .readFileSync(currentWorkingDirectory + 'todo.txt')
-            .toString();
-
-        data = fileData.split('\n');
-
-        let filterData = data.filter(function (value) {
-            return value !== '';
-        });
-
-        filterData.reverse();
+        const filterData = getToDoListArr();
 
         if (deleteIndex > filterData.length || deleteIndex <= 0) {
             createVue(styleError(`Error: задача #${deleteIndex} не существует. Ничего не будет удалено...`), { title: 'Ошибка' });
@@ -145,25 +148,14 @@ const doneFunction = () => {
     const doneIndex = args[3];
 
     if (doneIndex) {
-        let data = [];
         let dateobj = new Date();
         let dateString = dateobj.toISOString().substring(0, 10);
-
-        const fileData = fs
-            .readFileSync(currentWorkingDirectory + 'todo.txt')
-            .toString();
 
         const doneData = fs
             .readFileSync(currentWorkingDirectory + 'done.txt')
             .toString();
 
-        data = fileData.split('\n');
-
-        let filterData = data.filter(function (value) {
-            return value !== '';
-        });
-
-        filterData.reverse();
+        const filterData = getToDoListArr();
 
         if (doneIndex > filterData.length || doneIndex <= 0) {
             createVue(styleError(`Error: задача # ${doneIndex} не существует.`), { title: 'Ошибка' });
