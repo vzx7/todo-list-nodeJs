@@ -26,9 +26,27 @@ const boxenOptions = {
     backgroundColor: "#555555"
 };
 
+// helpers
 const createVue = (greeting, exStyle) => {
     const msgBox = boxen(greeting, { ...boxenOptions, ...exStyle });
     log(msgBox);
+}
+
+const readFileTodo = () => fs
+    .readFileSync(currentWorkingDirectory + 'todo.txt')
+    .toString();
+
+const getToDoListArr = () => {
+    let data = [];
+    const fileData = readFileTodo();
+    data = fileData.split('\n');
+
+    let filterData = data.filter(function (value) {
+        return value !== '';
+    });
+
+    filterData.reverse();
+    return filterData;
 }
 
 // Create files for data
@@ -83,22 +101,6 @@ ${len - (len - i) + 1}. ${filterData[i]}`
     createVue(styleReport(report), { title: 'Отчет' });
 };
 
-const readFileTodo = () => fs
-    .readFileSync(currentWorkingDirectory + 'todo.txt')
-    .toString();
-
-const getToDoListArr = () => {
-    let data = [];
-    const fileData = readFileTodo();
-    data = fileData.split('\n');
-
-    let filterData = data.filter(function (value) {
-        return value !== '';
-    });
-
-    filterData.reverse();
-    return filterData;
-}
 
 const addFunction = () => {
     const newTask = args[3];
