@@ -6,13 +6,17 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url);
 const log = console.log;
 
-// Accessing arguments 
+const styleAdd = chalk.bold.green;
+const styleDel = chalk.bold.red;
+const styleError = chalk.bold.red;
+const styleWarn = chalk.bold.yellow;
+const styleReport = chalk.bold.blue;
+const styleInfo = chalk.bold.white;
+const styleDone = chalk.bold.green;
+
+
 const args = process.argv;
-
-// The "index.js" is 8 characters long 
-// so -8 removes last 8 characters 
 const currentWorkingDirectory = args[1].slice(0, -8);
-
 const scriptFileName = path.basename(__filename);
 
 const boxenOptions = {
@@ -22,6 +26,11 @@ const boxenOptions = {
     borderColor: "green",
     backgroundColor: "#555555"
 };
+
+const createVue = (greeting, exStyle) => {
+    const msgBox = boxen(greeting, { ...boxenOptions, ...exStyle });
+    log(msgBox);
+}
 
 if (fs.existsSync(currentWorkingDirectory + 'todo.txt') === false) {
     let createStream = fs.createWriteStream('todo.txt');
@@ -41,192 +50,128 @@ $ node ${scriptFileName} done NUMBER                    # Пометить за�
 $ node ${scriptFileName} help, -h, --help               # Отобразить данную аннатацию
 $ node ${scriptFileName} report                         # Вывести статистику`;
 
-    const greeting = chalk.white.bold(UsageText);
-    const msgBox = boxen(greeting, { ...boxenOptions, title: 'Использование' });
-
-    log(msgBox);
-
+    const greeting = styleInfo(UsageText);
+    createVue(greeting, { title: 'Использование' })
 };
 
 const listFunction = () => {
 
-    // Create a empty array 
     let data = [];
-
-    // Read from todo.txt and convert it 
-    // into a string 
     const fileData = fs.readFileSync(
         currentWorkingDirectory + 'todo.txt')
         .toString();
 
-    // Split the string and store into array 
     data = fileData.split('\n');
 
-    // Filter the string for any empty lines in the file 
     let filterData = data.filter(function (value) {
         return value !== '';
     });
 
-    if (filterData.length === 0) {
-        log('There are no pending todos!');
+    const len = filterData.length;
+
+    if (len === 0) {
+        createVue(styleWarn('Нет задач для отображения...'));
+        return;
     }
 
-    for (let i = 0; i < filterData.length; i++) {
-        log((filterData.length - i) + '. '
-            + filterData[i]);
+    let report = '';
+
+    for (let i = 0; i < len; i++) {
+        report += `
+${len - (len - i) + 1}. ${filterData[i]}`
     }
+    createVue(styleReport(report), { title: 'Отчет' });
 };
 
 const addFunction = () => {
-
-    // New todo string argument is stored 
     const newTask = args[3];
 
-    // If argument is passed 
     if (newTask) {
-
-        // Create a empty array 
         let data = [];
-
-        // Read the data from file todo.txt and 
-        // convert it in string 
         const fileData = fs
             .readFileSync(currentWorkingDirectory + 'todo.txt')
             .toString();
 
-        // New task is added to previous data 
         fs.writeFile(
             currentWorkingDirectory + 'todo.txt',
             newTask + '\n' + fileData,
 
             function (err) {
-
-                // Handle if there is any error 
                 if (err) throw err;
-
-                // Logs the new task added 
-                log('Added todo: "' + newTask + '"');
+                createVue(styleAdd('Добавлена задача: "' + newTask + '"'), { title: 'Отчет' });
             },
         );
     } else {
-
-        // If argument was no passed 
-        log('Error: Missing todo string. Nothing added!');
+        createVue(styleError('Error: Вы не дообавили никакого сообщения для задачи! Задача не будет добавлена...'), { title: 'Ошибка' });
     }
 };
 
-
 const deleteFunction = () => {
-
-    // Store which index is passed 
     const deleteIndex = args[3];
-
-    // If index is passed 
     if (deleteIndex) {
-
-        // Create a empty array 
         let data = [];
-
-        // Read the data from file and convert 
-        // it into string 
         const fileData = fs
             .readFileSync(currentWorkingDirectory + 'todo.txt')
             .toString();
 
         data = fileData.split('\n');
 
-        // Filter the data for any empty lines 
         let filterData = data.filter(function (value) {
             return value !== '';
         });
 
-        // If delete index is greater than no. of task 
-        // or less than zero 
         if (deleteIndex > filterData.length || deleteIndex <= 0) {
-            log(
-                'Error: todo #' + deleteIndex
-                + ' does not exist. Nothing deleted.',
-            );
+            createVue(styleError(`Error: задача #${deleteIndex} не существует. Ничего не будет удалено...`), { title: 'Ошибка' });
         } else {
-
-            // Remove the task 
             filterData.splice(filterData.length - deleteIndex, 1);
-
-            // Join the array to form a string 
             const newData = filterData.join('\n');
-
-            // Write the new data back in file 
             fs.writeFile(
                 currentWorkingDirectory + 'todo.txt',
                 newData,
                 function (err) {
                     if (err) throw err;
-
-                    // Logs the deleted index 
-                    log('Deleted todo #' + deleteIndex);
+                    createVue(styleDel(`Удалена задача #${deleteIndex}`), { title: 'Отчет' });
                 },
             );
         }
     } else {
-
-        // Index argument was no passed 
-        log(
-            'Error: Missing NUMBER for deleting todo.');
+        createVue(styleError('Error: Пропущен номер задачи для удаления...'), { title: 'Ошибка' });
     }
 };
 
 
 const doneFunction = () => {
 
-    // Store the index passed as argument 
     const doneIndex = args[3];
 
-    // If argument is passed 
     if (doneIndex) {
-
-        // Empty array 
         let data = [];
-
-        // Create a new date object 
         let dateobj = new Date();
-
-        // Convert it to string and slice only the 
-        // date part, removing the time part 
         let dateString = dateobj.toISOString().substring(0, 10);
 
-        // Read the data from todo.txt 
         const fileData = fs
             .readFileSync(currentWorkingDirectory + 'todo.txt')
             .toString();
 
-        // Read the data from done.txt 
         const doneData = fs
             .readFileSync(currentWorkingDirectory + 'done.txt')
             .toString();
 
-        // Split the todo.txt data 
         data = fileData.split('\n');
 
-        // Filter for any empty lines 
         let filterData = data.filter(function (value) {
             return value !== '';
         });
 
-        // If done index is greater than no. of task or <=0 
         if (doneIndex > filterData.length || doneIndex <= 0) {
-            log('Error: todo #'
-                + doneIndex + ' does not exist.');
+            createVue(styleError(`Error: задача # ${doneIndex} не существует.`), { title: 'Ошибка' });
         } else {
 
-            // Delete the task from todo.txt 
-            // data and store it 
             const deleted = filterData.splice(
                 filterData.length - doneIndex, 1);
 
-            // Join the array to create a string 
             const newData = filterData.join('\n');
 
-            // Write back the data in todo.txt 
             fs.writeFile(
                 currentWorkingDirectory + 'todo.txt',
                 newData,
@@ -235,49 +180,36 @@ const doneFunction = () => {
                 },
             );
 
-            // Write the stored task in done.txt 
-            // along with date string 
             fs.writeFile(
                 currentWorkingDirectory + 'done.txt',
                 'x ' + dateString + ' ' + deleted
                 + '\n' + doneData,
                 function (err) {
                     if (err) throw err;
-                    log('Marked todo #'
-                        + doneIndex + ' as done.');
+                    createVue(styleDone(`Задача #${doneIndex} отмечена как выполненная.`), { title: 'Отчет' });
                 },
             );
         }
     } else {
-
-        // If argument was not passed 
-        log('Error: Missing NUMBER for'
-            + ' marking todo as done.');
+        createVue(styleError(`Error: Пропушен номер задачи, невомзожно отметить, что она выполнена!`), { title: 'Ошибка' });
     }
 };
 
 
 const reportFunction = () => {
 
-    // Create empty array for data of todo.txt 
     let todoData = [];
-
-    // Create empty array for data of done.txt 
     let doneData = [];
 
-    // Create a new date object 
     let dateobj = new Date();
 
-    // Slice the date part 
     let dateString = dateobj.toISOString().substring(0, 10);
 
-    // Read data from both the files 
     const todo = fs.readFileSync(currentWorkingDirectory
         + 'todo.txt').toString();
     const done = fs.readFileSync(currentWorkingDirectory
         + 'done.txt').toString();
 
-    // Split the data from both files 
     todoData = todo.split('\n');
 
     doneData = done.split('\n');
@@ -286,20 +218,12 @@ const reportFunction = () => {
     });
 
     let filterDoneData = doneData.filter(function (value) {
-
-        // Filter both the data for empty lines 
         return value !== '';
     });
 
-    log(
-        dateString +
-        ' ' +
-        'Pending : ' +
-        filterTodoData.length +
-        ' Completed : ' +
-        filterDoneData.length,
-        // Log the stats calculated 
-    );
+    createVue(styleReport(`${dateString} 
+Ожидает выполнения : ${filterTodoData.length}. 
+Выполнены : ${filterDoneData.length}.`), { title: 'Отчет' });
 };
 
 switch (args[2]) {
@@ -337,9 +261,6 @@ switch (args[2]) {
 
     default: {
         InfoFunction();
-        // We will display help when no 
-        // argument is passed or invalid 
-        // argument is passed 
     }
 }
 
