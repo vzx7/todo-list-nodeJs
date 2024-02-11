@@ -14,7 +14,6 @@ const styleReport = chalk.bold.blue;
 const styleInfo = chalk.bold.white;
 const styleDone = chalk.bold.green;
 
-
 const args = process.argv;
 const currentWorkingDirectory = args[1].slice(0, -8);
 const scriptFileName = path.basename(__filename);
@@ -70,7 +69,7 @@ const listFunction = () => {
     const len = filterData.length;
 
     if (len === 0) {
-        createVue(styleWarn('Нет задач для отображения...'));
+        createVue(styleWarn('Нет невыполненны задач, добавьте новые.'));
         return;
     }
 
@@ -120,6 +119,8 @@ const deleteFunction = () => {
             return value !== '';
         });
 
+        filterData.reverse();
+
         if (deleteIndex > filterData.length || deleteIndex <= 0) {
             createVue(styleError(`Error: задача #${deleteIndex} не существует. Ничего не будет удалено...`), { title: 'Ошибка' });
         } else {
@@ -138,7 +139,6 @@ const deleteFunction = () => {
         createVue(styleError('Error: Пропущен номер задачи для удаления...'), { title: 'Ошибка' });
     }
 };
-
 
 const doneFunction = () => {
 
@@ -162,6 +162,8 @@ const doneFunction = () => {
         let filterData = data.filter(function (value) {
             return value !== '';
         });
+
+        filterData.reverse();
 
         if (doneIndex > filterData.length || doneIndex <= 0) {
             createVue(styleError(`Error: задача # ${doneIndex} не существует.`), { title: 'Ошибка' });
