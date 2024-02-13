@@ -1,6 +1,4 @@
 import fs from "fs";
-
-
 export default class FSWorker {
     #currentWorkingDirectory;
     #todoList = 'todo.txt';
