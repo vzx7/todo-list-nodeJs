@@ -1,10 +1,10 @@
-import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import boxen from "boxen";
 import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url);
 const log = console.log;
+import FSWorker from "./FSWorker.js"
 
 const styleAdd = chalk.bold.green;
 const styleDel = chalk.bold.red;
@@ -15,8 +15,8 @@ const styleInfo = chalk.bold.white;
 const styleDone = chalk.bold.green;
 
 const args = process.argv;
-const currentWorkingDirectory = args[1].slice(0, -8);
 const scriptFileName = path.basename(__filename);
+const FsWorker = new FSWorker();
 
 const boxenOptions = {
     padding: 1,
@@ -32,32 +32,17 @@ const createVue = (greeting, exStyle) => {
     log(msgBox);
 }
 
-const readFileTodo = () => fs
-    .readFileSync(currentWorkingDirectory + 'todo.txt')
-    .toString();
-
 const getToDoListArr = () => {
     let data = [];
-    const fileData = readFileTodo();
+    const fileData = FsWorker.readToDo();
     data = fileData.split('\n');
 
     let filterData = data.filter(function (value) {
-        return value !== '';
+        return value.length !== 0;
     });
 
     filterData.reverse();
     return filterData;
-}
-
-// Create files for data
-if (fs.existsSync(currentWorkingDirectory + 'todo.txt') === false) {
-    let createStream = fs.createWriteStream('todo.txt');
-    createStream.end();
-}
-
-if (fs.existsSync(currentWorkingDirectory + 'done.txt') === false) {
-    let createStream = fs.createWriteStream('done.txt');
-    createStream.end();
 }
 
 const InfoFunction = () => {
@@ -75,11 +60,10 @@ $ node ${scriptFileName} report                         # Вывести ста�
 const listFunction = () => {
 
     let data = [];
-    const fileData = fs.readFileSync(
-        currentWorkingDirectory + 'todo.txt')
-        .toString();
+    const fileData = FsWorker.readToDo();
 
     data = fileData.split('\n');
+    console.log(data);
 
     let filterData = data.filter(function (value) {
         return value !== '';
@@ -88,7 +72,7 @@ const listFunction = () => {
     const len = filterData.length;
 
     if (len === 0) {
-        createVue(styleWarn('Нет невыполненны задач, добавьте новые.'));
+        createVue(styleWarn('Нет невыполненных задач, добавьте новые.'));
         return;
     }
 
@@ -104,17 +88,10 @@ ${len - (len - i) + 1}. ${filterData[i]}`
 
 const addFunction = () => {
     const newTask = args[3];
-
     if (newTask) {
-        const fileData = readFileTodo();
-        fs.writeFile(
-            currentWorkingDirectory + 'todo.txt',
-            newTask + '\n' + fileData,
-
-            function (err) {
-                if (err) throw err;
-                createVue(styleAdd('Добавлена задача: "' + newTask + '"'), { title: 'Отчет' });
-            },
+        FsWorker.writeToDo(
+            newTask,
+            () => createVue(styleAdd('Добавлена задача: "' + newTask + '"'), { title: 'Отчет' })
         );
     } else {
         createVue(styleError('Error: Вы не дообавили никакого сообщения для задачи! Задача не будет добавлена...'), { title: 'Ошибка' });
@@ -130,14 +107,9 @@ const deleteFunction = () => {
             createVue(styleError(`Error: задача #${deleteIndex} не существует. Ничего не будет удалено...`), { title: 'Ошибка' });
         } else {
             filterData.splice(filterData.length - deleteIndex, 1);
-            const newData = filterData.join('\n');
-            fs.writeFile(
-                currentWorkingDirectory + 'todo.txt',
-                newData,
-                function (err) {
-                    if (err) throw err;
-                    createVue(styleDel(`Удалена задача #${deleteIndex}`), { title: 'Отчет' });
-                },
+            FsWorker.writeToDo(
+                filterData,
+                () => createVue(styleDel(`Удалена задача #${deleteIndex}`), { title: 'Отчет' })
             );
         }
     } else {
@@ -152,11 +124,6 @@ const doneFunction = () => {
     if (doneIndex) {
         let dateobj = new Date();
         let dateString = dateobj.toISOString().substring(0, 10);
-
-        const doneData = fs
-            .readFileSync(currentWorkingDirectory + 'done.txt')
-            .toString();
-
         const filterData = getToDoListArr();
 
         if (doneIndex > filterData.length || doneIndex <= 0) {
@@ -165,25 +132,12 @@ const doneFunction = () => {
 
             const deleted = filterData.splice(
                 filterData.length - doneIndex, 1);
-
-            const newData = filterData.join('\n');
-
-            fs.writeFile(
-                currentWorkingDirectory + 'todo.txt',
-                newData,
-                function (err) {
-                    if (err) throw err;
-                },
-            );
-
-            fs.writeFile(
-                currentWorkingDirectory + 'done.txt',
-                'x ' + dateString + ' ' + deleted
-                + '\n' + doneData,
-                function (err) {
-                    if (err) throw err;
-                    createVue(styleDone(`Задача #${doneIndex} отмечена как выполненная.`), { title: 'Отчет' });
-                },
+            console.log(filterData);
+            filterData.length && FsWorker.writeToDo(filterData);
+            FsWorker.writeToDoDone(
+                dateString,
+                deleted,
+                () => createVue(styleDone(`Задача #${doneIndex} отмечена как выполненная.`), { title: 'Отчет' })
             );
         }
     } else {
@@ -201,10 +155,8 @@ const reportFunction = () => {
 
     let dateString = dateobj.toISOString().substring(0, 10);
 
-    const todo = fs.readFileSync(currentWorkingDirectory
-        + 'todo.txt').toString();
-    const done = fs.readFileSync(currentWorkingDirectory
-        + 'done.txt').toString();
+    const todo = FsWorker.readToDo();
+    const done = FsWorker.readToDoDone();
 
     todoData = todo.split('\n');
 
