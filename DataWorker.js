@@ -1,15 +1,14 @@
 import path from "path";
 import { fileURLToPath } from 'url'
 import FSWorker from "./FSWorker.js";
-
-const FsWorker = new FSWorker();
-
 export default class DataWorker {
     #scriptFileName;
+    #fsWorer;
 
     constructor() {
         const __filename = fileURLToPath(import.meta.url);
         this.#scriptFileName = path.basename(__filename);
+        this.#fsWorer = new FSWorker();
     }
 
     getHelpStr () {
@@ -24,7 +23,7 @@ $ node ${this.#scriptFileName} report                         # Вывести �
 
     getToDoListArr () {
         let data = [];
-        const fileData = FsWorker.readToDo();
+        const fileData = this.#fsWorer.readToDo();
         data = fileData.split('\n');
 
         let filterData = data.filter(function (value) {
@@ -37,7 +36,7 @@ $ node ${this.#scriptFileName} report                         # Вывести �
 
     getToDoData () {
         let data = [];
-        const fileData = FsWorker.readToDo();
+        const fileData = this.#fsWorer.readToDo();
 
         data = fileData.split('\n');
 
@@ -61,8 +60,8 @@ $ node ${this.#scriptFileName} report                         # Вывести �
 
         result.dateString = dateobj.toISOString().substring(0, 10);
 
-        const todo = FsWorker.readToDo();
-        const done = FsWorker.readToDoDone();
+        const todo = this.#fsWorer.readToDo();
+        const done = this.#fsWorer.readToDoDone();
 
         todoData = todo.split('\n');
 
