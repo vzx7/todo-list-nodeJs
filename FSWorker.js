@@ -1,11 +1,13 @@
 import fs from "fs";
 export default class FSWorker {
     #currentWorkingDirectory;
-    #todoList = 'todo.txt';
-    #doneList = 'done.txt';
+    #todoList;
+    #doneList;
 
     constructor() {
         this.#currentWorkingDirectory = process.argv[1].slice(0, -8);
+        this.#todoList = 'todo.txt';
+        this.#doneList = 'done.txt';
         // Create files for data
         if (fs.existsSync(this.#currentWorkingDirectory + this.#todoList) === false) {
             let createStream = fs.createWriteStream(this.#todoList);
