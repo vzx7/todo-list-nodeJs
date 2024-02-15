@@ -1,5 +1,5 @@
 
-import LogicWorker from "./LogicWorker .js"
+import LogicWorker from "./LogicWorker.js"
 
 const args = process.argv;
 const LWorker = new LogicWorker();
